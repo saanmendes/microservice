@@ -9,6 +9,7 @@ public class ConsumerAddressResponseDTO {
     private String age;
     private String email;
     private AddressDTO address;
+    private ConsumerAddressResponseDTO consumer;
 
     public ConsumerAddressResponseDTO(ConsumerResponseDTO consumerResponseDTO, AddressResponseDTO addressResponseDTO) {
         this.id = consumerResponseDTO.getId();
@@ -56,5 +57,13 @@ public class ConsumerAddressResponseDTO {
 
     public void setAddress(AddressDTO address) {
         this.address = address;
+    }
+
+    public ConsumerAddressResponseDTO getConsumer() {
+        return consumer;
+    }
+
+    public void setConsumer(ConsumerAddressResponseDTO consumer) {
+        this.consumer = consumer;
     }
 }

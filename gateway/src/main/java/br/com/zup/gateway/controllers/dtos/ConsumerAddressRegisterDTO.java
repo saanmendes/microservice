@@ -6,6 +6,7 @@ public class ConsumerAddressRegisterDTO {
     private String age;
     private String email;
     private AddressDTO address;
+    private String consumerId;
 
     public ConsumerAddressRegisterDTO() {
     }
@@ -40,5 +41,14 @@ public class ConsumerAddressRegisterDTO {
 
     public void setAddress(AddressDTO address) {
         this.address = address;
+    }
+
+
+    public String getConsumerId() {
+        return consumerId;
+    }
+
+    public void setConsumerId(String consumerId) {
+        this.consumerId = consumerId;
     }
 }
