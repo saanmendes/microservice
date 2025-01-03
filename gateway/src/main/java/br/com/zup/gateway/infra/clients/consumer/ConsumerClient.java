@@ -1,11 +1,14 @@
 package br.com.zup.gateway.infra.clients.consumer;
 
+import br.com.zup.gateway.infra.clients.address.dtos.AddressResponseDTO;
 import br.com.zup.gateway.infra.clients.consumer.dtos.ConsumerRegisterDTO;
 import br.com.zup.gateway.infra.clients.consumer.dtos.ConsumerResponseDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
+
+import java.util.List;
 
 @Component
 public class ConsumerClient {
@@ -15,7 +18,7 @@ public class ConsumerClient {
     private final String URL_BASE = "http://localhost:8081/consumer";
 
 
-    public ConsumerResponseDTO registerConsumerClient(ConsumerRegisterDTO registerDTO){
+    public ConsumerResponseDTO registerConsumer(ConsumerRegisterDTO registerDTO){
         return webClient
                 .post()
                 .uri(URL_BASE)
@@ -49,6 +52,25 @@ public class ConsumerClient {
                 .uri(URL_BASE + "/{consumerId}", consumerId)
                 .retrieve()
                 .toBodilessEntity()
+                .block();
+    }
+
+    public List<ConsumerResponseDTO> getAllConsumers() {
+        return webClient
+                .get()
+                .uri(URL_BASE)
+                .retrieve()
+                .bodyToFlux(ConsumerResponseDTO.class)
+                .collectList()
+                .block();
+    }
+
+    public ConsumerResponseDTO getConsumerById(String consumerId) {
+        return webClient
+                .get()
+                .uri(URL_BASE + "/consumer/" + consumerId)
+                .retrieve()
+                .bodyToMono(ConsumerResponseDTO.class)
                 .block();
     }
 }

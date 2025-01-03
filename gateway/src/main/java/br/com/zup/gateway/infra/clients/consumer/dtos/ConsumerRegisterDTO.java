@@ -1,5 +1,7 @@
 package br.com.zup.gateway.infra.clients.consumer.dtos;
 
+import br.com.zup.gateway.infra.clients.address.dtos.AddressRegisterDto;
+
 public class ConsumerRegisterDTO {
     private String name;
     private String age;
@@ -32,5 +34,8 @@ public class ConsumerRegisterDTO {
         this.email = email;
     }
 
+    public AddressRegisterDto getAddress() {
+        return new AddressRegisterDto();
+    }
 }
 
