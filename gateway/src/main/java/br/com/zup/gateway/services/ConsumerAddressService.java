@@ -2,19 +2,18 @@ package br.com.zup.gateway.services;
 
 import br.com.zup.gateway.controllers.dtos.ConsumerAddressRegisterDTO;
 import br.com.zup.gateway.controllers.dtos.ConsumerAddressResponseDTO;
-import br.com.zup.gateway.infra.clients.address.AddressClient;
 import br.com.zup.gateway.infra.clients.address.dtos.AddressRegisterDto;
 import br.com.zup.gateway.infra.clients.address.dtos.AddressResponseDTO;
 import br.com.zup.gateway.infra.clients.consumer.ConsumerClient;
-import br.com.zup.gateway.infra.clients.consumer.dtos.ConsumerRegisterDTO;
+import br.com.zup.gateway.infra.clients.address.AddressClient;
 import br.com.zup.gateway.infra.clients.consumer.dtos.ConsumerResponseDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.client.WebClientResponseException;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner;
+import java.util.stream.Collectors;
+
+import static com.azul.tooling.ConsumerManager.registerConsumer;
 
 @Service
 public class ConsumerAddressService {
@@ -25,55 +24,36 @@ public class ConsumerAddressService {
     @Autowired
     private AddressClient addressClient;
 
+    @Autowired
+    private ConsumerService consumerService;
+
     public ConsumerAddressResponseDTO registerConsumerAddress(ConsumerAddressRegisterDTO consumerAddressRegisterDTO) {
-        ConsumerResponseDTO consumerResponseDTO = registerConsumer(consumerAddressRegisterDTO);
-        AddressResponseDTO addressResponseDTO = registerAddress(consumerAddressRegisterDTO, consumerResponseDTO.getId());
-        return new ConsumerAddressResponseDTO(consumerResponseDTO, addressResponseDTO);
-    }
 
-    private ConsumerResponseDTO registerConsumer(ConsumerAddressRegisterDTO consumerAddressRegisterDTO) {
-        ConsumerRegisterDTO consumerRegisterDTO = mapToConsumerRegisterDTO(consumerAddressRegisterDTO);
-        return consumerClient.registerConsumerClient(consumerRegisterDTO);
-    }
+        ConsumerResponseDTO consumerResponseDTO = consumerService.registerConsumer(consumerAddressRegisterDTO);
 
-    private AddressResponseDTO registerAddress(ConsumerAddressRegisterDTO consumerAddressRegisterDTO, String consumerId) {
-        AddressRegisterDto addressRegisterDto = mapToAddressRegisterDTO(consumerAddressRegisterDTO, consumerId);
-        return addressClient.registeAddress(addressRegisterDto);
-    }
+        AddressRegisterDto addressRegisterDto = mapToAddressRegisterDTO(consumerAddressRegisterDTO, consumerResponseDTO.getId());
 
-    public ConsumerResponseDTO getConsumer(String consumerId) {
-        return consumerClient.getConsumer(consumerId);
-    }
+        AddressResponseDTO addressResponseDTO = addressClient.registerAddress(addressRegisterDto);
 
-    public AddressResponseDTO getAddress(String addressId) {
-        return addressClient.getAddress(addressId);
-    }
+        ConsumerAddressResponseDTO consumerAddressResponseDTO = new ConsumerAddressResponseDTO(consumerResponseDTO, addressResponseDTO);
 
-    public ConsumerResponseDTO updateConsumer(String consumerId, ConsumerAddressRegisterDTO consumerAddressRegisterDTO) {
-        ConsumerRegisterDTO consumerRegisterDTO = mapToConsumerRegisterDTO(consumerAddressRegisterDTO);
-        return consumerClient.updateConsumer(consumerId, consumerRegisterDTO);
-    }
-
-    public AddressResponseDTO updateAddress(String addressId, ConsumerAddressRegisterDTO consumerAddressRegisterDTO) {
-        AddressRegisterDto addressRegisterDto = mapToAddressRegisterDTO(consumerAddressRegisterDTO, addressId);
-        return addressClient.updateAddress(addressId, addressRegisterDto);
-    }
-
-    public void deleteConsumer(String consumerId) {
-        consumerClient.deleteConsumer(consumerId);
-    }
-
-    public void deleteAddress(String addressId) {
-        addressClient.deleteAddress(addressId);
+        return consumerAddressResponseDTO;
     }
 
 
-    private ConsumerRegisterDTO mapToConsumerRegisterDTO(ConsumerAddressRegisterDTO consumerAddressRegisterDTO) {
-        ConsumerRegisterDTO consumerRegisterDTO = new ConsumerRegisterDTO();
-        consumerRegisterDTO.setAge(consumerAddressRegisterDTO.getAge());
-        consumerRegisterDTO.setEmail(consumerAddressRegisterDTO.getEmail());
-        consumerRegisterDTO.setName(consumerAddressRegisterDTO.getName());
-        return consumerRegisterDTO;
+    public ConsumerAddressResponseDTO getConsumerAddress(String consumerId) {
+        ConsumerResponseDTO consumer = consumerClient.getConsumerById(consumerId);
+        AddressResponseDTO address = addressClient.getAddressByConsumerId(consumerId);
+        return new ConsumerAddressResponseDTO(consumer, address);
+    }
+
+    public List<ConsumerAddressResponseDTO> getAllConsumerAddresses() {
+        List<ConsumerResponseDTO> consumers = consumerClient.getAllConsumers();
+        List<AddressResponseDTO> addresses = addressClient.getAllAddresses();
+
+        return consumers.stream()
+                .map(consumer -> new ConsumerAddressResponseDTO(consumer, null))
+                .collect(Collectors.toList());
     }
 
     private AddressRegisterDto mapToAddressRegisterDTO(ConsumerAddressRegisterDTO consumerAddressRegisterDTO, String consumerId) {
@@ -85,4 +65,5 @@ public class ConsumerAddressService {
         addressRegisterDto.setZipCode(consumerAddressRegisterDTO.getAddress().getZipCode());
         return addressRegisterDto;
     }
+
 }
